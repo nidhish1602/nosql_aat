@@ -13,7 +13,7 @@ class CreateEntry(FlaskForm):
     restingECG = RadioField('Resting ECG?', choices=['Normal', 'LVH', 'ST'])
     exerciseAngina = IntegerField('Exercise Angina')
     heartDisease = IntegerField('Heart Disease? (0 / 1)')
-    add = SubmitField('Add')
+    create = SubmitField('Create')
 
 
 class DeleteEntry(FlaskForm):

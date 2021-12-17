@@ -11,26 +11,44 @@ client = MongoClient('localhost:27017')
 db = client.HeartFailure
 
 
-def mongoimport(csv_path):
-    """ Imports a csv file at path csv_name to a mongo collection
-    returns: count of the documents in the new collection
-    """
-    coll = db.heart_data
-    try:
-        data = pd.read_csv(csv_path)
+# def mongoimport(csv_path):
+#     """ Imports a csv file at path csv_name to a mongo collection
+#     returns: count of the documents in the new collection
+#     """
+#     coll = db.heart_data
+#     try:
+#         data = pd.read_csv(csv_path)
 
-    except FileNotFoundError:
-        return -1
+#     except FileNotFoundError:
+#         return -1
 
-    payload = json.loads(data.to_json(orient='records'))
-    coll.delete_many({})
-    coll.insert_many(payload)
-    return coll.count()
+#     payload = json.loads(data.to_json(orient='records'))
+#     coll.delete_many({})
+#     coll.insert_many(payload)
+#     count = coll.count_documents({})
+#     db.settings.update_one({"name":'d_id'},{"$set":{'value': count}})
+#     print("settings updated")
+#     return count
 
 
 if db.settings.count_documents({'name': 'd_id'}) <= 0:
     print("d_id Not found, creating....")
     db.settings.insert_one({'name': 'd_id', 'value': 0})
+
+csv_path = "heart.csv"
+coll = db.heart_data
+try:
+    data = pd.read_csv(csv_path)
+
+except FileNotFoundError:
+    print("File not found")
+
+payload = json.loads(data.to_json(orient='records'))
+coll.delete_many({})
+coll.insert_many(payload)
+count = coll.count_documents({})
+db.settings.update_one({"name":'d_id'},{"$set":{'value': count}})
+print("settings updated")
 
 
 def updateID(value):
@@ -41,6 +59,7 @@ def updateID(value):
         {'$set':
             {'value': d_id}
          })
+    print("settings updated")
 
 
 def createEntry(form):
@@ -70,6 +89,7 @@ def createEntry(form):
             'heartDisease':heartDisease}
 
     db.heart_data.insert_one(d_entry)
+    print("inserted heart data")
     updateID(1)
     return redirect('/')
 
@@ -110,35 +130,34 @@ def updateEntry(form):
     )
 
     return redirect('/')
-
-
+    
 @app.route('/', methods=['GET', 'POST'])
 def main():
     # create form
-    csv_path = "heart.csv"
-    if mongoimport(csv_path) == -1:
-        print("csv not found!")
-    else:
-        cform = CreateEntry(prefix='cform')
-        uform = UpdateEntry(prefix='uform')
-        dform = DeleteEntry(prefix='dform')
+    # csv_path = "heart.csv"
+    # if mongoimport(csv_path) == -1:
+    #     print("csv not found!")
+    # else:
+    cform = CreateEntry(prefix='cform')
+    uform = UpdateEntry(prefix='uform')
+    dform = DeleteEntry(prefix='dform')
 
-        # response
-        if cform.validate_on_submit() and cform.create.data:
-            return createEntry(cform)
-        if dform.validate_on_submit() and dform.delete.data:
-            return deleteEntry(dform)
-        if uform.validate_on_submit() and uform.update.data:
-            return updateEntry(uform)
+    # response
+    if cform.validate_on_submit() and cform.create.data:
+        return createEntry(cform)
+    if dform.validate_on_submit() and dform.delete.data:
+        return deleteEntry(dform)
+    if uform.validate_on_submit() and uform.update.data:
+        return updateEntry(uform)
 
-        # read all data
-        docs = db.heart_data.find().limit(10)  # only the first five
-        data = []
-        for i in docs:
-            data.append(i)
+    # read all data
+    docs = db.heart_data.find().sort('_id',-1).limit(10)  # only the last ten
+    data = []
+    for i in docs:
+        data.append(i)
 
-        return render_template('home.html', cform=cform, dform=dform, uform=uform,
-                               data=data)
+    return render_template('home.html', cform=cform, dform=dform, uform=uform,
+                            data=data)
 
 
 if __name__ == '__main__':

@@ -22,7 +22,7 @@
 				{{ cform.hidden_tag() }}
 				<fieldset>
 					<legend>Create</legend>
-					{{ cform.age }}<br />
+					{{ cform.age.label }}<br />
 					{{ cform.age }}<br />
 					{{ cform.sex.label }}<br />
 					{{ cform.sex }}<br />
@@ -40,7 +40,7 @@
 					{{ cform.exerciseAngina }}<br />
 					{{ cform.heartDisease.label }}<br />
 					{{ cform.heartDisease }}<br /><br />
-					{{ cform.add }}
+					{{ cform.create }}
 				</fieldset>
 			</form>
 			<form method="POST">
@@ -49,8 +49,7 @@
 					<legend>Update</legend>
 					{{ uform.key.label }}<br />
 					{{ uform.key }}<br /><br />
-					<br /><br />
-					{{ uform.age }}<br />
+					{{ uform.age.label }}<br />
 					{{ uform.age }}<br />
 					{{ uform.sex.label }}<br />
 					{{ uform.sex }}<br />
