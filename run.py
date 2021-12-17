@@ -25,6 +25,7 @@ def mongoimport(csv_path):
     payload = json.loads(data.to_json(orient='records'))
     coll.delete_many({})
     coll.insert_many(payload)
+
     return coll.count()
 
 
@@ -60,7 +61,7 @@ def createDocument(form):
 
 def deleteDocument(form):
     key = form.key.data
-    db.heart_data.delete_many({'id': int(key)})
+    db.heart_data.deleteOne({'d_id': int(key)})
 
     return redirect('/')
 
@@ -70,7 +71,7 @@ def updateDocument(form):
     age = form.age.data
 
     db.heart_data.update_one(
-        {"id": int(key)},
+        {"d_id": int(key)},
         {"$set":
             {"age": age}
          }
