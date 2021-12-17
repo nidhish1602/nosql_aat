@@ -1,0 +1,90 @@
+<html>
+	<head>
+		<title>NoSQL AAT</title>
+		<style>
+			.newspaper {
+				-webkit-column-count: 3; /* Chrome, Safari, Opera */
+				-moz-column-count: 3; /* Firefox */
+				column-count: 3;
+			}
+			.head {
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="head">
+			<h1>CRUD Application on Heart Dataset</h1>
+			<h2>using MongoDB</h2>
+		</div>
+		<div class="newspaper">
+			<form method="POST">
+				{{ cform.hidden_tag() }}
+				<fieldset>
+					<legend>Create</legend>
+					{{ cform.age }}<br />
+					{{ cform.age }}<br />
+					{{ cform.sex.label }}<br />
+					{{ cform.sex }}<br />
+					{{ cform.chestPain.label }}<br />
+					{{ cform.chestPain }}<br />
+					{{ cform.restingBP.label }}<br />
+					{{ cform.restingBP }}<br />
+					{{ cform.cholestrol.label }}<br />
+					{{ cform.cholestrol }}<br />
+					{{ cform.maxHeartRate.label }}<br />
+					{{ cform.maxHeartRate }}<br />
+					{{ cform.restingECG.label }}<br />
+					{{ cform.restingECG }}<br />
+					{{ cform.exerciseAngina.label }}<br />
+					{{ cform.exerciseAngina }}<br />
+					{{ cform.heartDisease.label }}<br />
+					{{ cform.heartDisease }}<br /><br />
+					{{ cform.add }}
+				</fieldset>
+			</form>
+			<form method="POST">
+				{{ uform.hidden_tag() }}
+				<fieldset>
+					<legend>Update</legend>
+					{{ uform.key.label }}<br />
+					{{ uform.key }}<br /><br />
+					<br /><br />
+					{{ uform.age }}<br />
+					{{ uform.age }}<br />
+					{{ uform.sex.label }}<br />
+					{{ uform.sex }}<br />
+					{{ uform.chestPain.label }}<br />
+					{{ uform.chestPain }}<br />
+					{{ uform.restingBP.label }}<br />
+					{{ uform.restingBP }}<br />
+					{{ uform.cholestrol.label }}<br />
+					{{ uform.cholestrol }}<br />
+					{{ uform.maxHeartRate.label }}<br />
+					{{ uform.maxHeartRate }}<br />
+					{{ uform.restingECG.label }}<br />
+					{{ uform.restingECG }}<br />
+					{{ uform.exerciseAngina.label }}<br />
+					{{ uform.exerciseAngina }}<br />
+					{{ uform.heartDisease.label }}<br />
+					{{ uform.heartDisease }}<br /><br />
+					{{ uform.update }}
+				</fieldset>
+			</form>
+			<form method="POST">
+				{{ dform.hidden_tag() }}
+				<fieldset>
+					<legend>Delete</legend>
+					{{ dform.key.label }}<br />
+					{{ dform.key }}<br />
+					{{ dform.delete }}
+				</fieldset>
+			</form>
+		</div>
+		<br />
+		<br />
+		<b>Data:</b><br /><br />
+		{% for i in data %} ID = {{ i["id"] }} <br />
+		Age = {{ i["age"] }} {% endfor %}
+	</body>
+</html>
