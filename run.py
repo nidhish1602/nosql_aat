@@ -43,36 +43,69 @@ def updateID(value):
          })
 
 
-def createDocument(form):
-    title = form.title.data
+def createEntry(form):
+    age = form.age.data
+    sex = form.sex.data
+    chestPain = form.chestPain.data
+    restingBP = form.restingBP.data
+    cholestrol = form.cholestrol.data
+    maxHeartRate = form.maxHeartRate.data
+    restingECG = form.restingECG.data
+    exerciseAngina = form.exerciseAngina.data
+    heartDisease = form.heartDisease.data
 
     d_id = db.settings.find_one()['value']
 
     # d_entry = {'id': d_id, 'title': title,
     #         'shortdesc': shortdesc, 'priority': priority}
-
-    d_entry = {'id': d_id}
+    d_entry = {'id': d_id,
+            'age':age,
+            'sex':sex,
+            'chestPain':chestPain,
+            'restingBP':restingBP,
+            'cholestrol':cholestrol,
+            'maxHeartRate':maxHeartRate,
+            'restingECG':restingECG,
+            'exerciseAngina':exerciseAngina,
+            'heartDisease':heartDisease}
 
     db.heart_data.insert_one(d_entry)
     updateID(1)
     return redirect('/')
 
 
-def deleteDocument(form):
+def deleteEntry(form):
     key = form.key.data
     db.heart_data.delete_many({'id': int(key)})
 
     return redirect('/')
 
 
-def updateDocument(form):
+def updateEntry(form):
     key = form.key.data
     age = form.age.data
+    sex = form.sex.data
+    chestPain = form.chestPain.data
+    restingBP = form.restingBP.data
+    cholestrol = form.cholestrol.data
+    maxHeartRate = form.maxHeartRate.data
+    restingECG = form.restingECG.data
+    exerciseAngina = form.exerciseAngina.data
+    heartDisease = form.heartDisease.data
 
     db.heart_data.update_one(
         {"id": int(key)},
         {"$set":
-            {"age": age}
+            {'age':age,
+            'sex':sex,
+            'chestPain':chestPain,
+            'restingBP':restingBP,
+            'cholestrol':cholestrol,
+            'maxHeartRate':maxHeartRate,
+            'restingECG':restingECG,
+            'exerciseAngina':exerciseAngina,
+            'heartDisease':heartDisease
+            }
          }
     )
 
@@ -92,14 +125,14 @@ def main():
 
         # response
         if cform.validate_on_submit() and cform.create.data:
-            return createDocument(cform)
+            return createEntry(cform)
         if dform.validate_on_submit() and dform.delete.data:
-            return deleteDocument(dform)
+            return deleteEntry(dform)
         if uform.validate_on_submit() and uform.update.data:
-            return updateDocument(uform)
+            return updateEntry(uform)
 
         # read all data
-        docs = db.heart_data.find().limit(5)  # only the first five
+        docs = db.heart_data.find().limit(10)  # only the first five
         data = []
         for i in docs:
             data.append(i)
