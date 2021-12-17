@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<title>NoSQL AAT</title>
-		<style>
+		<!-- <style>
 			.newspaper {
 				-webkit-column-count: 3; /* Chrome, Safari, Opera */
 				-moz-column-count: 3; /* Firefox */
@@ -10,7 +10,7 @@
 			.head {
 				text-align: center;
 			}
-		</style>
+		</style> -->
 	</head>
 	<body>
 		<div class="head">
@@ -83,8 +83,10 @@
 		</div>
 		<br />
 		<br />
-		<b>Data:</b><br /><br />
-		{% for i in data %} ID = {{ i["id"] }} <br />
-		Age = {{ i["age"] }} {% endfor %}
-	</body>
+    <b>Data:</b><br><br>
+    ID Age	Sex	ChestPainType	RestingBP	Cholesterol	FastingBS	RestingECG	MaxHR   ST_Slope	HeartDisease <br>
+    {% for i in data %}
+	{{ i["d_id"] }}&nbsp;{{ i["Age"] }}&nbsp;{{ i["Sex"] }}&nbsp;{{ i["ChestPainType"] }} &nbsp;{{ i["RestingBP"] }}&nbsp;{{ i["Cholesterol"] }}&nbsp;{{ i["FastingBS"] }}&nbsp;{{ i["RestingECG"] }}&nbsp;{{ i["MaxHR"] }}&nbsp;{{ i["ExerciseAngina"] }}&nbsp;<!-- {{ i["Oldpeak"] }}&nbsp; {{ i["ST_Slope"] }}&nbsp;-->{{ i["HeartDisease"] }}&nbsp;<br>
+        {% endfor %}
+  </body>
 </html>
