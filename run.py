@@ -1,8 +1,9 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, send_file
 from pymongo import MongoClient
 from classes import *
 import pandas as pd
 import json
+from matplotlib import pyplot as plt
 
 # config system
 app = Flask(__name__)
@@ -34,21 +35,21 @@ db = client.HeartFailure
 if db.settings.count_documents({'name': 'd_id'}) <= 0:
     print("d_id Not found, creating....")
     db.settings.insert_one({'name': 'd_id', 'value': 0})
+else:
+    # csv_path = "heart.csv"
+    # coll = db.heart_data
+    # try:
+    #     data = pd.read_csv(csv_path)
 
-csv_path = "heart.csv"
-coll = db.heart_data
-try:
-    data = pd.read_csv(csv_path)
+    # except FileNotFoundError:
+    #     print("File not found")
 
-except FileNotFoundError:
-    print("File not found")
-
-payload = json.loads(data.to_json(orient='records'))
-coll.delete_many({})
-coll.insert_many(payload)
-count = coll.count_documents({})
-db.settings.update_one({"name":'d_id'},{"$set":{'value': count}})
-print("settings updated")
+    # payload = json.loads(data.to_json(orient='records'))
+    # coll.delete_many({})
+    # coll.insert_many(payload)
+    # count = coll.count_documents({})
+    db.settings.update_one({"name":'d_id'},{"$set":{'value': db.heart_data.count_documents({})}})
+    print("settings updated")
 
 
 def updateID(value):
@@ -151,14 +152,85 @@ def main():
         return updateEntry(uform)
 
     # read all data
+    print(db.heart_data.count_documents({}))
     docs = db.heart_data.find().sort('_id',-1).limit(10)  # only the last ten
+    # doc = db.heart_data.find({"d_id":918})  # only the last ten
+    # print(doc)
     data = []
     for i in docs:
         data.append(i)
-
+    # print(data)
     return render_template('home.html', cform=cform, dform=dform, uform=uform,
-                            data=data)
+                            data=data,plot1='/plot1.png')
 
+# Route for showing pie chart of the types of chest pains and the percentage of each
+@app.route("/pie-plot.png")
+def plot_png():
+    chestpain = db.heart_data.distinct("ChestPainType")
+    data = []
+    for i in chestpain:
+        data.append(db.heart_data.count_documents({"ChestPainType":i}))
+
+    # Creating plot
+    explode = (0.05, 0.05, 0.05, 0.05)    
+    fig = plt.figure(figsize =(6, 4))
+    plt.pie(data, labels = chestpain, explode = explode, shadow = True, startangle = 90,autopct='%1.0f%%', pctdistance=0.5, labeldistance=1.1, textprops={'fontsize': 8})
+    
+    # save plot
+    plt.savefig('assests/static/images/chestpainpie.png')
+
+    return send_file('assests/static/images/chestpainpie.png', mimetype="image/png")
+
+# Route to show the no. of people having heart disease categorizes by age
+@app.route('/plot.png')
+def plot():
+    figg= plt.figure(figsize = (10,5))
+    query = db.heart_data.aggregate([
+        { "$match" : {"HeartDisease":1}},
+        {"$bucket": {
+          "groupBy": "$Age",
+          "boundaries": [ 0, 30, 40, 50, 60, 70, 100],
+          "default": -1,
+          "output": {
+            "count": { "$sum": 1 }
+          }
+        }},
+        { "$group": {
+        "_id": "null",
+        "documents": { "$push": {          
+            "interval": { "$let": {
+                "vars": {
+                    "idx": { "$switch": {
+                        "branches": [
+                            { "case": { "$eq": [ "$_id", -1 ] }, "then": 6 },
+                            { "case": { "$eq": [ "$_id", 0 ] }, "then": 5 },
+                            { "case": { "$eq": [ "$_id", 30 ] }, "then": 4 },
+                            { "case": { "$eq": [ "$_id", 40 ] }, "then": 3 },
+                            { "case": { "$eq": [ "$_id", 50 ] }, "then": 2 },
+                            { "case": { "$eq": [ "$_id", 60 ] }, "then": 1 },
+                            { "case": { "$eq": [ "$_id", 70 ] }, "then": 0 },
+                        ],
+                        "default": 6
+                    } }
+                },
+                "in": { "$arrayElemAt": [ [ ">70", "60-70", "50-60", "40-50", "30-40", "<30", "0"], "$$idx" ] } 
+            } },
+            "count": "$count",
+        } }
+    } }
+    ])
+    x_points=[]
+    y_points=[]
+    for i in query:
+        for j in i['documents']:
+            x_points.append(j['interval'])
+            y_points.append(j['count'])
+    plt.bar(x_points,y_points,width=0.4)
+    plt.xlabel("Age")
+    plt.ylabel("No. of people having heart disease")
+    plt.title("People having heart Disease")
+    plt.savefig("assests/static/images/bar.png")
+    return send_file("assests/static/images/bar.png", mimetype="image/png")
 
 if __name__ == '__main__':
     app.run(debug=True)
