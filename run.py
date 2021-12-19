@@ -3,7 +3,6 @@ from flask import Flask, render_template, redirect, send_file
 from pymongo import MongoClient
 from classes import *
 import pandas as pd
-import numpy as np
 import json
 from matplotlib import pyplot as plt
 
@@ -223,7 +222,7 @@ def plot():
 
     plt.figure(figsize=(10, 5))
     plt.bar(x_points, y_points, width=0.4)
-    ind = np.arange(len(y_points))
+    ind = range(len(y_points))
     print(ind)
     fig, ax = plt.subplots()
     ax.bar(ind, y_points)
