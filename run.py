@@ -3,6 +3,7 @@ from flask import Flask, render_template, redirect, send_file
 from pymongo import MongoClient
 from classes import *
 import pandas as pd
+import numpy as np
 import json
 from matplotlib import pyplot as plt
 
@@ -45,7 +46,6 @@ else:
 
 def updateID():
     count = db.heart_data.count_documents({})
-
     db.settings.update_one(
         {'name': 'd_id'},
         {'$set':
@@ -85,6 +85,7 @@ def createEntry(form):
 
 
 def deleteEntry(form):
+    # TODO Throw error for invalid key
     key = form.key.data
     db.heart_data.delete_one({'d_id': int(key)})
 
@@ -92,7 +93,7 @@ def deleteEntry(form):
 
 
 def updateEntry(form):
-    print("calling update")
+    # TODO Throw error for invalid key
     key = int(form.key.data)
     if(key != ""):
         prev = db.heart_data.find_one({'d_id': key})
@@ -125,7 +126,7 @@ def updateEntry(form):
                 u_dict
              }
         )
-
+        print(f'updated {key}')
     return redirect('/')
 
 
@@ -179,7 +180,6 @@ def plot_png():
 
 @app.route('/plot.png')
 def plot():
-    figg = plt.figure(figsize=(10, 5))
     query = db.heart_data.aggregate([
         {"$match": {"HeartDisease": 1}},
         {"$bucket": {
@@ -220,9 +220,20 @@ def plot():
         for j in i['documents']:
             x_points.append(j['interval'])
             y_points.append(j['count'])
+
+    plt.figure(figsize=(10, 5))
     plt.bar(x_points, y_points, width=0.4)
+    ind = np.arange(len(y_points))
+    print(ind)
+    fig, ax = plt.subplots()
+    ax.bar(ind, y_points)
+    ax.set_xticks(ind)
+    ax.set_xticklabels(x_points)
+    ax.bar_label(ax.containers[0])
+
     plt.xlabel("Age")
     plt.ylabel("No. of people having heart disease")
+
     plt.title("People having heart Disease")
     plt.savefig("assets/bar.png")
     return send_file("assets/bar.png", mimetype="image/png")
