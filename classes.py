@@ -1,19 +1,20 @@
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, SubmitField, StringField
+from wtforms import IntegerField, SubmitField, StringField, SelectField
 from wtforms.fields.choices import RadioField
 
 
 class CreateEntry(FlaskForm):
     age = IntegerField('Age')
     sex = StringField('Sex')
-    chestPain = StringField('Chest Pain Type')
+    chestPain = SelectField('Chest Pain Type', choices=[
+        'ASY', 'ATA', 'NAP', 'TA'])
     restingBP = IntegerField('Resting BP')
-    cholestrol = IntegerField('Cholesterol')
+    cholesterol = IntegerField('Cholesterol')
     maxHeartRate = IntegerField('Max Heart Rate')
-    restingECG = RadioField('Resting ECG?', choices=['Normal', 'LVH', 'ST'])
-    exerciseAngina = IntegerField('Exercise Angina')
-    heartDisease = IntegerField('Heart Disease? (0 / 1)')
-    add = SubmitField('Add')
+    restingECG = SelectField('Resting ECG?', choices=['Normal', 'LVH', 'ST'])
+    exerciseAngina = SelectField('Exercise Angina', choices=['N', 'Y'])
+    heartDisease = RadioField('Heart Disease? (0 / 1)', choices=['0', '1'])
+    create = SubmitField('Create')
 
 
 class DeleteEntry(FlaskForm):
@@ -25,11 +26,12 @@ class UpdateEntry(FlaskForm):
     key = StringField('ID')
     age = IntegerField('Age')
     sex = StringField('Sex')
-    chestPain = StringField('Chest Pain Type')
+    chestPain = SelectField('Chest Pain Type', choices=[
+        'ASY', 'ATA', 'NAP', 'TA'])
     restingBP = IntegerField('Resting BP')
-    cholestrol = IntegerField('Cholesterol')
+    cholesterol = IntegerField('Cholesterol')
     maxHeartRate = IntegerField('Max Heart Rate')
-    restingECG = RadioField('Resting ECG?', choices=['Normal', 'LVH', 'ST'])
-    exerciseAngina = IntegerField('Exercise Angina')
-    heartDisease = IntegerField('Heart Disease? (0 / 1)')
+    restingECG = SelectField('Resting ECG?', choices=['Normal', 'LVH', 'ST'])
+    exerciseAngina = SelectField('Exercise Angina', choices=['N', 'Y'])
+    heartDisease = RadioField('Heart Disease? (0 / 1)', choices=['0', '1'])
     update = SubmitField('Update')
