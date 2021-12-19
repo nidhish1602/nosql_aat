@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, redirect, send_file
 from pymongo import MongoClient
 from classes import *
@@ -34,12 +35,12 @@ def mongoimport(csv_path):
 
 if db.settings.count_documents({'name': 'd_id'}) <= 0:
     print("d_id Not found, creating....")
-    db.settings.insert_one({'name': 'd_id', 'value': 0})
+    count = mongoimport("heart.csv")
+    db.settings.insert_one({'name': 'd_id', 'value': count})
 else:
-    count = mongoimport("heartdata.csv")
+    count = db.heart_data.count_documents({})
     db.settings.update_one(
         {"name": 'd_id'}, {"$set": {'value': count}})
-    print("settings updated")
 
 
 def updateID():
@@ -64,18 +65,18 @@ def createEntry(form):
     exerciseAngina = form.exerciseAngina.data
     heartDisease = form.heartDisease.data
 
-    d_id = db.settings.find_one()['value']
+    d_id = db.settings.find_one({})['value']
 
     d_entry = {'d_id': d_id,
-               'age': age,
-               'sex': sex,
-               'chestPain': chestPain,
-               'restingBP': restingBP,
-               'cholesterol': cholesterol,
-               'maxHeartRate': maxHeartRate,
-               'restingECG': restingECG,
-               'exerciseAngina': exerciseAngina,
-               'heartDisease': heartDisease}
+               'Age': age,
+               'Sex': sex,
+               'ChestPainType': chestPain,
+               'RestingBP': restingBP,
+               'Cholesterol': cholesterol,
+               'MaxHR': maxHeartRate,
+               'RestingECG': restingECG,
+               'ExerciseAngina': exerciseAngina,
+               'HeartDisease': heartDisease}
 
     db.heart_data.insert_one(d_entry)
     print("inserted heart data")
@@ -91,32 +92,37 @@ def deleteEntry(form):
 
 
 def updateEntry(form):
-    key = form.key.data
+    print("calling update")
+    key = int(form.key.data)
     if(key != ""):
-        prev = db.heart_data.find_one({'d_id': int(key)})
-        age = form.age.data | prev.age
-        sex = form.sex.data | prev.sex
-        chestPain = form.chestPain.data | prev.chestPain
-        restingBP = form.restingBP.data | prev.restingBP
-        cholesterol = form.cholesterol.data | prev.cholesterol
-        maxHeartRate = form.maxHeartRate.data | prev.maxHeartRate
-        restingECG = form.restingECG.data | prev.restingECG
-        exerciseAngina = form.exerciseAngina.data | prev.exerciseAngina
-        heartDisease = form.heartDisease.data | prev.heartDisease
+        prev = db.heart_data.find_one({'d_id': key})
+        if(prev == None):
+            return redirect('/', code=204)
+
+        u_dict = {}
+        if (form["age"].data not in ["", None]):
+            u_dict["Age"] = form["age"].data
+        if (form["sex"].data not in ["", None]):
+            u_dict['Sex'] = form["sex"].data
+        if(form["chestPain"].data not in ["", None]):
+            u_dict['ChestPainType'] = form["chestPain"].data
+        if(form["restingBP"].data not in ["", None]):
+            u_dict['RestingBP'] = form["restingBP"].data
+        if(form["cholesterol"].data not in ["", None]):
+            u_dict['Cholesterol'] = form["cholesterol"].data
+        if(form["maxHeartRate"].data not in ["", None]):
+            u_dict['MaxHR'] = form["maxHeartRate"].data
+        if(form["restingECG"].data not in ["", None]):
+            u_dict['RestingECG'] = form["restingECG"].data
+        if(form["exerciseAngina"].data not in ["", None]):
+            u_dict['ExerciseAngina'] = form["exerciseAngina"].data
+        if(form["heartDisease"].data not in ["", None]):
+            u_dict['HeartDisease'] = form["heartDisease"].data
 
         db.heart_data.update_one(
-            {"d_id": int(key)},
+            {"d_id": key},
             {"$set":
-                {'age': age,
-                 'sex': sex,
-                 'chestPain': chestPain,
-                 'restingBP': restingBP,
-                 'cholesterol': cholesterol,
-                 'maxHeartRate': maxHeartRate,
-                 'restingECG': restingECG,
-                 'exerciseAngina': exerciseAngina,
-                 'heartDisease': heartDisease
-                 }
+                u_dict
              }
         )
 
@@ -125,11 +131,6 @@ def updateEntry(form):
 
 @app.route('/', methods=['GET', 'POST'])
 def main():
-    # create form
-    # csv_path = "heart.csv"
-    # if mongoimport(csv_path) == -1:
-    #     print("csv not found!")
-    # else:
     cform = CreateEntry(prefix='cform')
     uform = UpdateEntry(prefix='uform')
     dform = DeleteEntry(prefix='dform')
@@ -139,7 +140,7 @@ def main():
         return createEntry(cform)
     if dform.validate_on_submit() and dform.delete.data:
         return deleteEntry(dform)
-    if uform.validate_on_submit() and uform.update.data:
+    if uform.is_submitted() and uform.update.data:  # not validated as non-compulsory fields exist
         return updateEntry(uform)
 
     # read all data
